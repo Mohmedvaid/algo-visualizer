@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinding Algorithm Visualizer</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h1>Pathfinding Visualizer</h1>
+            </div>
+            
+            <div class="navbar-controls">
+                <!-- Algorithm Selection -->
+                <div class="control-group">
+                    <label for="algorithm-select">Algorithm:</label>
+                    <select id="algorithm-select" class="control-input">
+                        <option value="">Select Algorithm</option>
+                        <option value="dijkstra">Dijkstra's Algorithm</option>
+                        <option value="astar">A* Search</option>
+                        <option value="bfs">Breadth-First Search</option>
+                        <option value="dfs">Depth-First Search</option>
+                    </select>
+                </div>
+
+                <!-- Visualize Button -->
+                <button id="visualize-btn" class="btn btn-primary" disabled>Visualize</button>
+
+                <!-- Clear Buttons -->
+                <div class="control-group">
+                    <button id="clear-path-btn" class="btn btn-secondary">Clear Path</button>
+                    <button id="clear-walls-btn" class="btn btn-secondary">Clear Walls</button>
+                    <button id="clear-board-btn" class="btn btn-secondary">Clear Board</button>
+                </div>
+
+                <!-- Speed Control -->
+                <div class="control-group">
+                    <label for="speed-select">Speed:</label>
+                    <select id="speed-select" class="control-input">
+                        <option value="fast">Fast</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="slow">Slow</option>
+                    </select>
+                </div>
+
+                <!-- Maze Generation -->
+                <div class="control-group">
+                    <label for="maze-select">Mazes:</label>
+                    <select id="maze-select" class="control-input">
+                        <option value="">Select Maze</option>
+                        <option value="random">Random Maze</option>
+                        <option value="recursive-division">Recursive Division</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Info Panel -->
+            <div class="info-panel">
+                <div id="algorithm-info" class="algorithm-description">
+                    Select an algorithm to begin visualization
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-title">Legend</div>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-node node-start"></div>
+                            <span>Start Node</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-node node-target"></div>
+                            <span>Target Node</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-node node-wall"></div>
+                            <span>Wall</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-node node-unvisited"></div>
+                            <span>Unvisited</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-node node-visiting"></div>
+                            <span>Visiting</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-node node-visited"></div>
+                            <span>Visited</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-node node-path"></div>
+                            <span>Shortest Path</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Container -->
+            <div class="grid-container">
+                <div id="grid" class="grid"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/js/main.js"></script>
+</body>
+</html>
+
