@@ -23,6 +23,9 @@ Thumbs.db
 dist/
 build/
 
+# Deployment files
+docs/
+
 # Logs
 logs/
 *.log

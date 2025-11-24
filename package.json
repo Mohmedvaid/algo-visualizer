@@ -16,8 +16,9 @@
     "bfs",
     "dfs"
   ],
-  "author": "",
+  "author": "Mohmed Vaid",
   "license": "MIT",
+  "homepage": "https://mohmedvaid.github.io/algo-visualizer",
   "dependencies": {
     "express": "^4.18.2"
   },
