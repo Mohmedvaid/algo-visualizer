@@ -99,9 +99,15 @@ export class Board {
         // Clear existing grid
         this.gridElement.innerHTML = '';
         
-        // Set grid CSS properties
-        this.gridElement.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
-        this.gridElement.style.gridTemplateRows = `repeat(${this.rows}, 1fr)`;
+        // Set grid CSS properties - use fixed sizes for consistent rendering
+        const nodeSize = 22; // Must match CSS node size
+        this.gridElement.style.gridTemplateColumns = `repeat(${this.cols}, ${nodeSize}px)`;
+        this.gridElement.style.gridTemplateRows = `repeat(${this.rows}, ${nodeSize}px)`;
+        
+        // Ensure grid fills container
+        this.gridElement.style.width = '100%';
+        this.gridElement.style.height = '100%';
+        this.gridElement.style.overflow = 'auto';
 
         // Create and append node elements
         for (let row = 0; row < this.rows; row++) {
@@ -431,24 +437,31 @@ export class Board {
 
     /**
      * Calculate optimal grid dimensions based on container size
+     * Maximizes grid to fill entire available space
      * @param {HTMLElement} container - Container element
      * @returns {{rows: number, cols: number}} - Calculated dimensions
      */
     static calculateDimensions(container) {
+        if (!container) {
+            return { rows: 30, cols: 50 }; // Default fallback
+        }
+        
         const containerRect = container.getBoundingClientRect();
-        const nodeSize = 25; // Base node size in pixels
+        const nodeSize = 22; // Cell size in pixels (must match CSS)
         const gap = 1; // Gap between nodes
         
-        const availableWidth = containerRect.width - 40; // Account for padding
-        const availableHeight = containerRect.height - 40;
+        // Use full container dimensions - maximize space usage
+        const availableWidth = Math.max(containerRect.width, 800);
+        const availableHeight = Math.max(containerRect.height, 600);
         
-        const cols = Math.floor((availableWidth + gap) / (nodeSize + gap));
-        const rows = Math.floor((availableHeight + gap) / (nodeSize + gap));
+        // Calculate maximum cells that fit perfectly
+        const cols = Math.floor(availableWidth / (nodeSize + gap));
+        const rows = Math.floor(availableHeight / (nodeSize + gap));
         
-        // Ensure minimum dimensions
+        // Return dimensions, ensuring minimum size
         return {
-            rows: Math.max(10, rows),
-            cols: Math.max(10, cols)
+            rows: Math.max(25, rows), // Good minimum for visibility
+            cols: Math.max(35, cols)  // Good minimum for visibility
         };
     }
 }

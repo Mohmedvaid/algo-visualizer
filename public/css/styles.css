@@ -9,26 +9,26 @@
 }
 
 :root {
-    /* Monochrome Color Palette */
+    /* Color Palette */
     --color-bg: #ffffff;
-    --color-surface: #f5f5f5;
+    --color-surface: #f8f9fa;
     --color-border: #e0e0e0;
     --color-text-primary: #1a1a1a;
     --color-text-secondary: #666666;
     --color-text-muted: #999999;
     
-    /* Node States - Monochrome */
+    /* Node States - Colorful but tasteful */
     --color-node-unvisited: #ffffff;
-    --color-node-wall: #2a2a2a;
-    --color-node-start: #000000;
-    --color-node-target: #4a4a4a;
-    --color-node-visiting: #d0d0d0;
-    --color-node-visited: #b0b0b0;
-    --color-node-path: #707070;
+    --color-node-wall: #2c3e50;
+    --color-node-start: #27ae60; /* Green */
+    --color-node-target: #e74c3c; /* Red */
+    --color-node-visiting: #3498db; /* Light blue - animated */
+    --color-node-visited: #9b59b6; /* Purple */
+    --color-node-path: #f39c12; /* Orange/Gold */
     
     /* Interactive Elements */
-    --color-primary: #1a1a1a;
-    --color-primary-hover: #333333;
+    --color-primary: #3498db; /* Blue */
+    --color-primary-hover: #2980b9;
     --color-secondary: #e0e0e0;
     --color-secondary-hover: #d0d0d0;
     
@@ -67,7 +67,7 @@ body {
     font-family: var(--font-family);
     font-size: var(--font-size-base);
     color: var(--color-text-primary);
-    background-color: var(--color-bg);
+    background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -89,23 +89,24 @@ body {
    ======================================== */
 
 .navbar {
-    background-color: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
     padding: var(--spacing-md) var(--spacing-xl);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-lg);
     flex-wrap: wrap;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
     z-index: 100;
 }
 
 .navbar-brand h1 {
     font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: var(--color-text-primary);
+    font-weight: 700;
+    color: #ffffff;
     white-space: nowrap;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .navbar-controls {
@@ -125,30 +126,35 @@ body {
 
 .control-group label {
     font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
+    color: #ffffff;
     white-space: nowrap;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .control-input {
     padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--color-border);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--radius-sm);
-    background-color: var(--color-bg);
+    background-color: rgba(255, 255, 255, 0.95);
     color: var(--color-text-primary);
     font-size: var(--font-size-sm);
     font-family: var(--font-family);
     cursor: pointer;
     transition: all var(--transition-base);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .control-input:hover {
-    border-color: var(--color-text-secondary);
+    border-color: rgba(255, 255, 255, 0.6);
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .control-input:focus {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    border-color: #f39c12;
+    box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.3);
 }
 
 /* ========================================
@@ -187,16 +193,38 @@ body {
     background-color: var(--color-primary);
     color: var(--color-bg);
     border-color: var(--color-primary);
+    font-weight: 600;
 }
 
 .btn-primary:hover:not(:disabled) {
     background-color: var(--color-primary-hover);
     border-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-secondary {
     background-color: var(--color-bg);
     color: var(--color-text-primary);
+}
+
+.btn-stop {
+    background-color: #e74c3c;
+    color: var(--color-bg);
+    border-color: #e74c3c;
+    font-weight: 600;
+}
+
+.btn-stop:hover:not(:disabled) {
+    background-color: #c0392b;
+    border-color: #c0392b;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-stop:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* ========================================
@@ -207,8 +235,9 @@ body {
     display: flex;
     flex: 1;
     overflow: hidden;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-lg);
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    min-height: 0;
 }
 
 /* ========================================
@@ -265,8 +294,9 @@ body {
     width: 20px;
     height: 20px;
     border: 1px solid var(--color-border);
-    border-radius: 2px;
+    border-radius: 3px;
     flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* ========================================
@@ -276,13 +306,15 @@ body {
 .grid-container {
     flex: 1;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: auto;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
+    align-items: stretch;
+    justify-content: stretch;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 2px solid rgba(52, 152, 219, 0.2);
     border-radius: var(--radius-md);
-    padding: var(--spacing-md);
+    padding: 0;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+    min-height: 0;
 }
 
 .grid {
@@ -290,18 +322,21 @@ body {
     gap: 1px;
     background-color: var(--color-border);
     border: 1px solid var(--color-border);
-    padding: 1px;
-    margin: auto;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 
 /* Grid will be dynamically sized in JavaScript */
 .grid-node {
-    width: 25px;
-    height: 25px;
+    width: 22px;
+    height: 22px;
     background-color: var(--color-node-unvisited);
     border: 1px solid var(--color-border);
     cursor: pointer;
-    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
     position: relative;
 }
 
@@ -323,6 +358,7 @@ body {
     background-color: var(--color-node-start);
     border-color: var(--color-node-start);
     position: relative;
+    box-shadow: 0 0 8px rgba(39, 174, 96, 0.4);
 }
 
 .node-start::after {
@@ -331,16 +367,18 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     background-color: var(--color-bg);
     border-radius: 50%;
+    border: 2px solid var(--color-node-start);
 }
 
 .node-target {
     background-color: var(--color-node-target);
     border-color: var(--color-node-target);
     position: relative;
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
 }
 
 .node-target::after {
@@ -348,25 +386,29 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 12px;
-    height: 12px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
     background-color: var(--color-bg);
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border: 2px solid var(--color-node-target);
 }
 
 .node-visiting {
     background-color: var(--color-node-visiting);
     animation: visiting-pulse 0.5s ease-in-out;
+    box-shadow: 0 0 4px rgba(52, 152, 219, 0.5);
 }
 
 .node-visited {
     background-color: var(--color-node-visited);
+    box-shadow: 0 0 2px rgba(155, 89, 182, 0.3);
 }
 
 .node-path {
     background-color: var(--color-node-path);
     animation: path-reveal 0.3s ease-in-out;
+    box-shadow: 0 0 6px rgba(243, 156, 18, 0.6);
+    border-color: var(--color-node-path);
 }
 
 /* Animations */
@@ -436,8 +478,8 @@ body {
     }
     
     .grid-node {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
     }
 }
 

@@ -17,6 +17,7 @@ class PathfindingVisualizer {
         this.gridContainer = null;
         this.algorithmSelect = null;
         this.visualizeBtn = null;
+        this.stopBtn = null;
         this.clearPathBtn = null;
         this.clearWallsBtn = null;
         this.clearBoardBtn = null;
@@ -24,7 +25,7 @@ class PathfindingVisualizer {
         this.algorithmInfo = null;
         
         // Animation state
-        this.animationSpeed = 'medium';
+        this.animationSpeed = 'fast';
         this.isVisualizing = false;
     }
 
@@ -42,16 +43,18 @@ class PathfindingVisualizer {
      * Get references to DOM elements
      */
     getDOMElements() {
-        this.gridContainer = document.getElementById('grid');
+        this.gridElement = document.getElementById('grid');
+        this.gridContainer = document.querySelector('.grid-container');
         this.algorithmSelect = document.getElementById('algorithm-select');
         this.visualizeBtn = document.getElementById('visualize-btn');
+        this.stopBtn = document.getElementById('stop-btn');
         this.clearPathBtn = document.getElementById('clear-path-btn');
         this.clearWallsBtn = document.getElementById('clear-walls-btn');
         this.clearBoardBtn = document.getElementById('clear-board-btn');
         this.speedSelect = document.getElementById('speed-select');
         this.algorithmInfo = document.getElementById('algorithm-info');
         
-        if (!this.gridContainer) {
+        if (!this.gridElement || !this.gridContainer) {
             throw new Error('Grid container not found');
         }
     }
@@ -60,17 +63,45 @@ class PathfindingVisualizer {
      * Initialize the board with calculated dimensions
      */
     initializeBoard() {
-        // Calculate optimal grid size based on container
-        const dimensions = Board.calculateDimensions(this.gridContainer);
+        // Wait a bit for layout to settle, then calculate dimensions
+        // This ensures container has proper dimensions
+        const initBoard = () => {
+            if (!this.gridContainer) return;
+            
+            // Calculate optimal grid size based on available container
+            const dimensions = Board.calculateDimensions(this.gridContainer);
+            
+            // Create board instance
+            this.board = new Board(dimensions.rows, dimensions.cols);
+            
+            // Initialize and render (pass the grid element, not container)
+            this.board.initialize(this.gridElement);
+            
+            // Initialize animator
+            this.animator = new Animator(this.board, this.animationSpeed);
+        };
         
-        // Create board instance
-        this.board = new Board(dimensions.rows, dimensions.cols);
+        // Try immediately, if container not ready, wait
+        if (this.gridContainer.offsetWidth > 0) {
+            initBoard();
+        } else {
+            setTimeout(initBoard, 100);
+        }
         
-        // Initialize and render
-        this.board.initialize(this.gridContainer);
-        
-        // Initialize animator
-        this.animator = new Animator(this.board, this.animationSpeed);
+        // Recalculate on resize with debouncing
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (!this.isVisualizing && this.board && this.gridContainer) {
+                    const newDimensions = Board.calculateDimensions(this.gridContainer);
+                    if (newDimensions.rows !== this.board.rows || newDimensions.cols !== this.board.cols) {
+                        this.board = new Board(newDimensions.rows, newDimensions.cols);
+                        this.board.initialize(this.gridElement);
+                    }
+                }
+            }, 250);
+        });
     }
 
     /**
@@ -85,6 +116,11 @@ class PathfindingVisualizer {
         // Visualize button
         this.visualizeBtn.addEventListener('click', () => {
             this.onVisualizeClick();
+        });
+
+        // Stop button
+        this.stopBtn.addEventListener('click', () => {
+            this.onStopClick();
         });
 
         // Clear buttons
@@ -150,6 +186,7 @@ class PathfindingVisualizer {
         
         // Disable controls during visualization
         this.setControlsEnabled(false);
+        this.showStopButton(true);
         this.isVisualizing = true;
 
         try {
@@ -174,6 +211,11 @@ class PathfindingVisualizer {
                 return;
             }
 
+            // Check if stopped before animation
+            if (!this.isVisualizing) {
+                return;
+            }
+
             // Animate the results
             await this.animator.animateAlgorithm(
                 result.visitedNodes,
@@ -186,8 +228,29 @@ class PathfindingVisualizer {
         } finally {
             // Re-enable controls
             this.setControlsEnabled(true);
+            this.showStopButton(false);
             this.isVisualizing = false;
         }
+    }
+
+    /**
+     * Handle stop button click
+     */
+    onStopClick() {
+        if (!this.isVisualizing) {
+            return;
+        }
+
+        // Stop the animation
+        if (this.animator) {
+            this.animator.stop();
+        }
+
+        // Reset state
+        this.isVisualizing = false;
+        this.board.setAnimating(false);
+        this.setControlsEnabled(true);
+        this.showStopButton(false);
     }
 
     /**
@@ -229,12 +292,7 @@ class PathfindingVisualizer {
      */
     onClearPath() {
         if (this.isVisualizing) {
-            // Stop any ongoing animation
-            if (this.animator) {
-                this.animator.stop();
-            }
-            this.isVisualizing = false;
-            this.setControlsEnabled(true);
+            this.onStopClick();
         }
         this.board.clearPath();
     }
@@ -244,11 +302,7 @@ class PathfindingVisualizer {
      */
     onClearWalls() {
         if (this.isVisualizing) {
-            if (this.animator) {
-                this.animator.stop();
-            }
-            this.isVisualizing = false;
-            this.setControlsEnabled(true);
+            this.onStopClick();
         }
         this.board.clearWalls();
     }
@@ -258,11 +312,7 @@ class PathfindingVisualizer {
      */
     onClearBoard() {
         if (this.isVisualizing) {
-            if (this.animator) {
-                this.animator.stop();
-            }
-            this.isVisualizing = false;
-            this.setControlsEnabled(true);
+            this.onStopClick();
         }
         this.board.clearBoard();
     }
@@ -337,6 +387,16 @@ class PathfindingVisualizer {
         this.clearBoardBtn.disabled = !enabled;
         this.algorithmSelect.disabled = !enabled;
         this.speedSelect.disabled = !enabled;
+    }
+
+    /**
+     * Show or hide the stop button
+     * @param {boolean} show - Whether to show the stop button
+     */
+    showStopButton(show) {
+        if (this.stopBtn) {
+            this.stopBtn.style.display = show ? 'block' : 'none';
+        }
     }
 
     /**
