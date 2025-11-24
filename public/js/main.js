@@ -1,5 +1,5 @@
 import { Board } from './board.js';
-import { bfs, dfs, dijkstra, aStar } from './algorithms/index.js';
+import { bfs, dfs, dijkstra, aStar, greedy, bidirectional, weightedAStar, idaStar, jps } from './algorithms/index.js';
 import { Animator } from './animations.js';
 import { generateRandomMaze, generateRecursiveDivisionAdaptive } from './mazes/index.js';
 
@@ -23,6 +23,14 @@ class PathfindingVisualizer {
         this.clearBoardBtn = null;
         this.speedSelect = null;
         this.algorithmInfo = null;
+        this.noPathModal = null;
+        this.modalMessage = null;
+        this.modalOkBtn = null;
+        this.modalCloseBtn = null;
+        this.tutorialModal = null;
+        this.tutorialOkBtn = null;
+        this.tutorialCloseBtn = null;
+        this.dontShowAgainCheckbox = null;
         
         // Animation state
         this.animationSpeed = 'fast';
@@ -37,6 +45,7 @@ class PathfindingVisualizer {
         this.initializeBoard();
         this.attachEventListeners();
         this.updateAlgorithmInfo('');
+        this.checkAndShowTutorial();
     }
 
     /**
@@ -53,6 +62,14 @@ class PathfindingVisualizer {
         this.clearBoardBtn = document.getElementById('clear-board-btn');
         this.speedSelect = document.getElementById('speed-select');
         this.algorithmInfo = document.getElementById('algorithm-info');
+        this.noPathModal = document.getElementById('no-path-modal');
+        this.modalMessage = document.getElementById('modal-message');
+        this.modalOkBtn = document.getElementById('modal-ok-btn');
+        this.modalCloseBtn = document.querySelector('.modal-close');
+        this.tutorialModal = document.getElementById('tutorial-modal');
+        this.tutorialOkBtn = document.getElementById('tutorial-ok-btn');
+        this.tutorialCloseBtn = document.getElementById('tutorial-close');
+        this.dontShowAgainCheckbox = document.getElementById('dont-show-again');
         
         if (!this.gridElement || !this.gridContainer) {
             throw new Error('Grid container not found');
@@ -121,6 +138,52 @@ class PathfindingVisualizer {
         // Stop button
         this.stopBtn.addEventListener('click', () => {
             this.onStopClick();
+        });
+
+        // Modal close handlers
+        if (this.modalCloseBtn) {
+            this.modalCloseBtn.addEventListener('click', () => {
+                this.hideNoPathModal();
+            });
+        }
+
+        if (this.modalOkBtn) {
+            this.modalOkBtn.addEventListener('click', () => {
+                this.hideNoPathModal();
+            });
+        }
+
+        // Close modal when clicking outside
+        if (this.noPathModal) {
+            this.noPathModal.addEventListener('click', (e) => {
+                if (e.target === this.noPathModal) {
+                    this.hideNoPathModal();
+                }
+            });
+        }
+
+        // Tutorial modal handlers
+        if (this.tutorialOkBtn) {
+            this.tutorialOkBtn.addEventListener('click', () => {
+                this.closeTutorial();
+            });
+        }
+
+        if (this.tutorialCloseBtn) {
+            this.tutorialCloseBtn.addEventListener('click', () => {
+                this.closeTutorial();
+            });
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (this.tutorialModal && this.tutorialModal.classList.contains('show')) {
+                    this.closeTutorial();
+                } else if (this.noPathModal && this.noPathModal.classList.contains('show')) {
+                    this.hideNoPathModal();
+                }
+            }
         });
 
         // Clear buttons
@@ -217,11 +280,18 @@ class PathfindingVisualizer {
             }
 
             // Animate the results
-            await this.animator.animateAlgorithm(
+            const animationSuccess = await this.animator.animateAlgorithm(
                 result.visitedNodes,
                 result.path,
                 result.success
             );
+
+            // Show popup if no path was found
+            if (!result.success) {
+                setTimeout(() => {
+                    this.showNoPathModal();
+                }, 500); // Small delay after animation completes
+            }
 
         } catch (error) {
             console.error('Visualization error:', error);
@@ -276,6 +346,21 @@ class PathfindingVisualizer {
                 
                 case 'astar':
                     return aStar(grid, startNode, targetNode);
+                
+                case 'greedy':
+                    return greedy(grid, startNode, targetNode);
+                
+                case 'bidirectional':
+                    return bidirectional(grid, startNode, targetNode);
+                
+                case 'weightedAStar':
+                    return weightedAStar(grid, startNode, targetNode, 1.5);
+                
+                case 'idaStar':
+                    return idaStar(grid, startNode, targetNode);
+                
+                case 'jps':
+                    return jps(grid, startNode, targetNode);
                 
                 default:
                     console.error(`Unknown algorithm: ${algorithmName}`);
@@ -400,6 +485,81 @@ class PathfindingVisualizer {
     }
 
     /**
+     * Show no path found modal with sarcastic message
+     */
+    showNoPathModal() {
+        if (!this.noPathModal || !this.modalMessage) return;
+
+        // Array of sarcastic messages
+        const messages = [
+            "Oops! Looks like you've successfully trapped the target. Well done... I guess? 🤷‍♂️",
+            "Mission impossible! The target is completely walled in. Maybe try removing a wall or two? 🧱",
+            "Great job! You've created a maze so perfect that even the algorithm gave up. Impressive! 😅",
+            "No path found. The target is having a rough day surrounded by walls. 🎯",
+            "Congratulations! You've achieved the impossible: a target with no escape route. 🏆",
+            "Path not found. Maybe the target needs a vacation from all those walls? ✈️",
+            "Oops! It seems you've built the world's best prison. The algorithm couldn't break out! 🔒",
+            "No way through! Your wall-building skills are... impressive? 🤔"
+        ];
+
+        // Pick a random message
+        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+        this.modalMessage.textContent = randomMessage;
+
+        // Show modal
+        this.noPathModal.classList.add('show');
+    }
+
+    /**
+     * Hide no path found modal
+     */
+    hideNoPathModal() {
+        if (this.noPathModal) {
+            this.noPathModal.classList.remove('show');
+        }
+    }
+
+    /**
+     * Check if tutorial should be shown and display it
+     */
+    checkAndShowTutorial() {
+        // Check localStorage for user preference
+        const dontShowTutorial = localStorage.getItem('pathfinding-visualizer-dont-show-tutorial');
+        
+        if (dontShowTutorial !== 'true') {
+            // Show tutorial after a short delay for smooth experience
+            setTimeout(() => {
+                this.showTutorial();
+            }, 300);
+        }
+    }
+
+    /**
+     * Show tutorial modal
+     */
+    showTutorial() {
+        if (this.tutorialModal) {
+            this.tutorialModal.classList.add('show');
+        }
+    }
+
+    /**
+     * Close tutorial modal and save preference if checkbox is checked
+     */
+    closeTutorial() {
+        if (!this.tutorialModal) return;
+
+        // Check if "Don't show again" is checked
+        if (this.dontShowAgainCheckbox && this.dontShowAgainCheckbox.checked) {
+            // Save preference to localStorage
+            localStorage.setItem('pathfinding-visualizer-dont-show-tutorial', 'true');
+        }
+
+        // Hide modal
+        this.tutorialModal.classList.remove('show');
+    }
+
+    /**
      * Update algorithm description text
      * @param {string} algorithm - Algorithm name
      */
@@ -407,6 +567,11 @@ class PathfindingVisualizer {
         const descriptions = {
             'dijkstra': "Dijkstra's Algorithm is a weighted pathfinding algorithm that guarantees the shortest path. It explores all possible paths uniformly.",
             'astar': "A* Search is a weighted, heuristic-based algorithm that guarantees the shortest path. It's faster than Dijkstra's by prioritizing promising paths.",
+            'greedy': "Greedy Best-First Search is a weighted, heuristic-based algorithm that always expands the node closest to the target. Very fast but does not guarantee the shortest path.",
+            'bidirectional': "Bidirectional Search searches simultaneously from both start and target nodes. When the searches meet, a path is found. Can be faster for large grids.",
+            'weightedAStar': "Weighted A* uses a weighted heuristic (f = g + w*h) with w > 1. Faster than A* but may not guarantee the shortest path.",
+            'idaStar': "IDA* (Iterative Deepening A*) is a memory-efficient variant of A* using iterative deepening. Uses less memory but may explore nodes multiple times.",
+            'jps': "Jump Point Search is an optimized A* that jumps over symmetric paths. Very fast on open grids with few obstacles by only exploring jump points.",
             'bfs': "Breadth-First Search is an unweighted algorithm that explores level by level. It guarantees the shortest path for unweighted graphs.",
             'dfs': "Depth-First Search is an unweighted algorithm that explores as far as possible before backtracking. It does not guarantee the shortest path.",
             '': 'Select an algorithm to begin visualization'

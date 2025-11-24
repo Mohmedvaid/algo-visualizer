@@ -22,6 +22,11 @@
                         <option value="">Select Algorithm</option>
                         <option value="dijkstra">Dijkstra's Algorithm</option>
                         <option value="astar">A* Search</option>
+                        <option value="weightedAStar">Weighted A*</option>
+                        <option value="jps">Jump Point Search</option>
+                        <option value="idaStar">IDA* (Iterative Deepening A*)</option>
+                        <option value="greedy">Greedy Best-First Search</option>
+                        <option value="bidirectional">Bidirectional Search</option>
                         <option value="bfs">Breadth-First Search</option>
                         <option value="dfs">Depth-First Search</option>
                     </select>
@@ -110,6 +115,68 @@
                 <div id="grid" class="grid"></div>
             </div>
         </main>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorial-modal" class="modal">
+        <div class="modal-content tutorial-content">
+            <span class="modal-close" id="tutorial-close">&times;</span>
+            <h2>👋 Welcome to Pathfinding Visualizer!</h2>
+            <div class="tutorial-steps">
+                <div class="tutorial-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Select an Algorithm</strong>
+                        <p>Choose from the dropdown menu. Each algorithm explores the grid differently!</p>
+                    </div>
+                </div>
+                <div class="tutorial-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Draw Walls</strong>
+                        <p>Click and drag on the grid to add walls. Walls block the pathfinding algorithms.</p>
+                    </div>
+                </div>
+                <div class="tutorial-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Move Start & Target</strong>
+                        <p>Click and drag the green circle (start) or red diamond (target) to reposition them.</p>
+                    </div>
+                </div>
+                <div class="tutorial-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>Visualize!</strong>
+                        <p>Click "Visualize" to see the algorithm in action. Use "Stop" to cancel anytime.</p>
+                    </div>
+                </div>
+                <div class="tutorial-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <strong>Generate Mazes</strong>
+                        <p>Use the "Mazes" dropdown to quickly generate interesting patterns to test algorithms.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-footer">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="dont-show-again">
+                    <span>Don't show this tutorial again</span>
+                </label>
+                <button id="tutorial-ok-btn" class="btn btn-primary">Let's Go!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Path Found Modal -->
+    <div id="no-path-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>🚫 No Path Found!</h2>
+            <p id="modal-message">Oops! Looks like you've successfully trapped the target. Well done... I guess? 🤷‍♂️</p>
+            <button id="modal-ok-btn" class="btn btn-primary">Got it</button>
+        </div>
     </div>
 
     <!-- Scripts -->

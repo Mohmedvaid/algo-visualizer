@@ -46,6 +46,9 @@ export class Node {
         this.totalDistance = Infinity;
         this.isVisited = false;
         this.isInPath = false;
+        // Reset bidirectional search properties
+        this.backwardPrevious = null;
+        this.backwardDistance = Infinity;
     }
 
     /**
