@@ -1,4 +1,6 @@
 import { Board } from './board.js';
+import { bfs, dfs, dijkstra, aStar } from './algorithms/index.js';
+import { Animator } from './animations.js';
 
 /**
  * Main application controller
@@ -8,6 +10,7 @@ class PathfindingVisualizer {
     constructor() {
         this.board = null;
         this.currentAlgorithm = null;
+        this.animator = null;
         
         // DOM references
         this.gridContainer = null;
@@ -64,6 +67,9 @@ class PathfindingVisualizer {
         
         // Initialize and render
         this.board.initialize(this.gridContainer);
+        
+        // Initialize animator
+        this.animator = new Animator(this.board, this.animationSpeed);
     }
 
     /**
@@ -96,6 +102,9 @@ class PathfindingVisualizer {
         // Speed selection
         this.speedSelect.addEventListener('change', (e) => {
             this.animationSpeed = e.target.value;
+            if (this.animator) {
+                this.animator.setSpeed(this.animationSpeed);
+            }
         });
 
         // Maze generation (placeholder for now)
@@ -130,7 +139,7 @@ class PathfindingVisualizer {
     /**
      * Handle visualize button click
      */
-    onVisualizeClick() {
+    async onVisualizeClick() {
         if (!this.currentAlgorithm || this.isVisualizing) {
             return;
         }
@@ -140,26 +149,92 @@ class PathfindingVisualizer {
         
         // Disable controls during visualization
         this.setControlsEnabled(false);
-        this.board.setAnimating(true);
         this.isVisualizing = true;
 
-        // TODO: Run algorithm and animate
-        // This will be implemented when we add the algorithm modules
-        console.log(`Visualizing ${this.currentAlgorithm} algorithm`);
-        
-        // For now, re-enable controls after a delay (placeholder)
-        setTimeout(() => {
+        try {
+            // Get start and target nodes
+            const startNode = this.board.getStartNode();
+            const targetNode = this.board.getTargetNode();
+
+            if (!startNode || !targetNode) {
+                console.error('Start or target node not found');
+                return;
+            }
+
+            // Run the selected algorithm
+            const result = this.runAlgorithm(
+                this.currentAlgorithm,
+                startNode,
+                targetNode
+            );
+
+            if (!result) {
+                console.error('Algorithm failed to run');
+                return;
+            }
+
+            // Animate the results
+            await this.animator.animateAlgorithm(
+                result.visitedNodes,
+                result.path,
+                result.success
+            );
+
+        } catch (error) {
+            console.error('Visualization error:', error);
+        } finally {
+            // Re-enable controls
             this.setControlsEnabled(true);
-            this.board.setAnimating(false);
             this.isVisualizing = false;
-        }, 1000);
+        }
+    }
+
+    /**
+     * Run the selected pathfinding algorithm
+     * @param {string} algorithmName - Name of the algorithm to run
+     * @param {Node} startNode - Start node
+     * @param {Node} targetNode - Target node
+     * @returns {{visitedNodes: Node[], path: Node[], success: boolean}|null}
+     */
+    runAlgorithm(algorithmName, startNode, targetNode) {
+        const grid = this.board.grid;
+
+        try {
+            switch (algorithmName) {
+                case 'bfs':
+                    return bfs(grid, startNode, targetNode);
+                
+                case 'dfs':
+                    return dfs(grid, startNode, targetNode);
+                
+                case 'dijkstra':
+                    return dijkstra(grid, startNode, targetNode);
+                
+                case 'astar':
+                    return aStar(grid, startNode, targetNode);
+                
+                default:
+                    console.error(`Unknown algorithm: ${algorithmName}`);
+                    return null;
+            }
+        } catch (error) {
+            console.error(`Error running ${algorithmName}:`, error);
+            return null;
+        }
     }
 
     /**
      * Handle clear path button click
      */
     onClearPath() {
-        if (this.isVisualizing) return;
+        if (this.isVisualizing) {
+            // Stop any ongoing animation
+            if (this.animator) {
+                this.animator.stop();
+            }
+            this.isVisualizing = false;
+            this.setControlsEnabled(true);
+        }
         this.board.clearPath();
     }
 
@@ -167,7 +242,13 @@ class PathfindingVisualizer {
      * Handle clear walls button click
      */
     onClearWalls() {
-        if (this.isVisualizing) return;
+        if (this.isVisualizing) {
+            if (this.animator) {
+                this.animator.stop();
+            }
+            this.isVisualizing = false;
+            this.setControlsEnabled(true);
+        }
         this.board.clearWalls();
     }
 
@@ -175,7 +256,13 @@ class PathfindingVisualizer {
      * Handle clear board button click
      */
     onClearBoard() {
-        if (this.isVisualizing) return;
+        if (this.isVisualizing) {
+            if (this.animator) {
+                this.animator.stop();
+            }
+            this.isVisualizing = false;
+            this.setControlsEnabled(true);
+        }
         this.board.clearBoard();
     }
 
