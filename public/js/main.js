@@ -1,6 +1,7 @@
 import { Board } from './board.js';
 import { bfs, dfs, dijkstra, aStar } from './algorithms/index.js';
 import { Animator } from './animations.js';
+import { generateRandomMaze, generateRecursiveDivisionAdaptive } from './mazes/index.js';
 
 /**
  * Main application controller
@@ -270,7 +271,7 @@ class PathfindingVisualizer {
      * Handle maze selection
      * @param {string} mazeType - Selected maze type
      */
-    onMazeSelect(mazeType) {
+    async onMazeSelect(mazeType) {
         if (!mazeType || this.isVisualizing) return;
         
         // Reset maze select
@@ -279,8 +280,33 @@ class PathfindingVisualizer {
             mazeSelect.value = '';
         }
         
-        // TODO: Generate maze based on type
-        console.log(`Generating ${mazeType} maze`);
+        // Clear previous visualization
+        this.board.clearWalls();
+        
+        // Disable controls during maze generation
+        this.setControlsEnabled(false);
+        this.board.setAnimating(true);
+        
+        try {
+            switch (mazeType) {
+                case 'random':
+                    await generateRandomMaze(this.board, 0.3);
+                    break;
+                
+                case 'recursive-division':
+                    await generateRecursiveDivisionAdaptive(this.board);
+                    break;
+                
+                default:
+                    console.error(`Unknown maze type: ${mazeType}`);
+            }
+        } catch (error) {
+            console.error('Maze generation error:', error);
+        } finally {
+            // Re-enable controls
+            this.setControlsEnabled(true);
+            this.board.setAnimating(false);
+        }
     }
 
     /**
